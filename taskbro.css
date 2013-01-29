@@ -57,10 +57,26 @@ input#txt_task:focus{
   outline:medium none;
   width:400px;
 }
-#datepicker{
+#task_filter{
   padding:5px;
   width:80px;
   font-size:12px;
+  background:none;
+  border:1px solid gray;
+  cursor:pointer;
+  text-align:center;
+  font-family:verdana;
+}
+#show_all{
+  padding:5px 14px;
+  width:80px;
+  font-size:12px;
+  background:none;
+  border:1px solid gray;
+  text-align:center;
+  text-decoration:none;
+  border-radius:5px;
+  color:#888;
 }
 .btn{
   box-shadow: 0 1px 0 #FFFFFF;
@@ -171,3 +187,12 @@ input#txt_task:focus{
   background-image: url('images/create.png');background-position: center center;width: 29px;height: 29px;display: inline-block;
 }
 #notfound{text-align:center;margin-top:20px;color:teal;font-size:20px;display:none;}
+
+.tag{
+  position:absolute;bottom:3px;right:10px;font-size:11px;
+}
+.itag{
+  border:1px solid grey;
+  border-radius:5px;
+  padding:0px 3px;
+}

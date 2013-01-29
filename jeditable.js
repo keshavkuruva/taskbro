@@ -123,7 +123,7 @@
             }
             
             $(this).bind(settings.event, function(e) {
-                
+               
                 /* abort if disabled for this element */
                 if (true === $(this).data('disabled.editable')) {
                     return;
@@ -165,11 +165,18 @@
                     }
                 }
                 //$(this).css('visibility', '');
-                
                 /* remove placeholder text, replace is here because of IE */
                 if ($(this).html().toLowerCase().replace(/(;|")/g, '') == 
                     settings.placeholder.toLowerCase().replace(/(;|")/g, '')) {
                         $(this).html('');
+                }
+                //Moin Hack
+                if($(this).html().replace(/(;|")/g, '').indexOf('itag') != -1){
+                  var clean_tag = [];
+                  $('<div>', {html: $(this).html() }).find('span.itag').each(function(){
+                    clean_tag.push( $(this).text() );
+                  });
+                  $(this).html(clean_tag.join(', '))
                 }
                                 
                 self.editing    = true;

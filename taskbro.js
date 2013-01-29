@@ -1,58 +1,4 @@
-$.fn.is_html5_storage = function(){
-  return ('localStorage' in window) && window['localStorage'] !== null;
-}
-
-$.fn.testme = function(msg) {
-  alert(msg);
-}
-
-//JSON Paresr
-$.fn.parse_obj = function(obj){
-  return JSON.parse(obj)
-}
-
-//Tasks
-$.fn.get_tasks = function(){
-  return $.fn.parse_obj(localStorage['tasks']);
-}
-
-//Titles
-$.fn.task_index = function(){
-  var arr = [];
-  if(localStorage.length > 0){
-    var tasks = $.fn.get_tasks();
-    for(var key in tasks){
-      var task = $.fn.parse_obj(tasks[key]);
-      arr.push(task['title']);
-    }
-  }
- return arr;
-}
-
-//Count
-$.fn.task_count = function(){
-  return $.fn.task_index().length;
-}
-
-$.fn.create_tile = function(task_uuid, task_title , task_color, task_created_at){
-  var new_tile = "<div id='"+ task_uuid +"' class='tilebox "+ task_uuid +"' style='position:relative;background-color:"+task_color+";'>";
-  new_tile = new_tile + "<a href='#' class='close'>X</a>";
-  new_tile = new_tile + "<div class='edit' style='position:relative;width:90%'>" + task_title + "</div>";
-  new_tile = new_tile + "<div class='datetime'>" + task_created_at + "</div>";
-  new_tile = new_tile + "</div>";
-  $('#tiles_container').append(new_tile).css( 'display', 'block');
-}
-
-$.fn.create_tile_list = function(task_uuid, task_title){
-  var new_list = "<div id='list_" + task_uuid +"' class='tile_title "+ task_uuid +"'>" + task_title + "</div>";
-  $('#tiles_list').append(new_list).css('display', 'block');
-}
-
-$.fn.currentdate = function(){
-  var currentdate = new Date();
-  return (currentdate.getDate() + "/" + (currentdate.getMonth()+1)  + "/" + currentdate.getFullYear());
-}
-
+// HTML5 Tweak
 var data = {
   set: function(key, value) {
     if (!key || !value) {return;}
@@ -76,10 +22,110 @@ var data = {
   }
 }
 
+// Browser support HTML5?
+function is_html5_storage(){
+  return ('localStorage' in window) && window['localStorage'] !== null;
+}
+
+//Current Date
+function current_date(){
+  var currentdate = new Date();
+  return (currentdate.getDate() + "/" + (currentdate.getMonth()+1)  + "/" + currentdate.getFullYear());
+}
+
+// Paresr
+$.fn.parse_obj = function(obj){
+  return JSON.parse(obj)
+}
+
+function clean_tags(tags){
+  if(tags){
+    tags = tags.split(',');
+    if(tags.length == 1 && (tags[0] == '' || tags[0] == 'Tag Me')){
+      return 'Tag Me';
+    }else{
+      var arr = [];
+      for(var i in tags){
+        arr.push("<span class='itag'>"+ tags[i].trim() +"</span>");
+      }
+      return arr.join(' ');
+    }
+  }else{
+    return 'Tag Me';
+  }
+}
+//Tasks
+$.fn.get_tasks = function(){
+  // TODO: Implement return data.get('tasks');
+  return $.fn.parse_obj(localStorage['tasks']);
+}
+
+// Task Length
+$.fn.task_length = function(){
+  return $.fn.task_titles().length;
+}
+
+//Titles
+$.fn.task_titles = function(){
+  var arr = [];
+  if(localStorage.length > 0){
+    var tasks = $.fn.get_tasks();
+    for(var key in tasks){
+      var task = $.fn.parse_obj(tasks[key]);
+      arr.push(task['title']);
+    }
+  }
+ return arr;
+}
+
+$.fn.create_tile = function(task){
+  var task_uuid = task.id.toString();
+  var new_tile = "<div id='"+ task_uuid +"' class='tilebox "+ task_uuid +"' style='position:relative;background-color:"+task.color+";'>";
+  new_tile = new_tile + "<a href='#' class='close'>X</a>";
+  new_tile = new_tile + "<div id='title_"+task_uuid+"' class='edit' style='position:relative;width:90%'>" + task.title + "</div>";
+  new_tile = new_tile + "<div class='datetime'>" + task.created_at + "</div>";
+  new_tile = new_tile + "<div id='tags_"+ task_uuid +"' class='tag edit'>"+ clean_tags(task.tags) +"</div>";
+  new_tile = new_tile + "</div>";
+  $('#tiles_container').append(new_tile).css( 'display', 'block');
+}
+
+$.fn.create_tile_list = function(task_uuid, task_title){
+  var new_list = "<div id='list_" + task_uuid +"' class='tile_title "+ task_uuid +"'>" + task_title + "</div>";
+  $('#tiles_list').append(new_list).css('display', 'block');
+}
+
+$.fn.show_all_task = function (){
+  location.reload();
+  $('#task_filter').val('Filter');
+}
+// DOM Loaded
 $(document).ready(function(){
   
+  // Browser support HTML5
+  if(is_html5_storage()){
+    // Notification
+  }else{
+    $('#html5_support').css('display','block');
+  }
+  
+  // Color Picker
+  $('#colorSelector').ColorPicker({
+    color: '#ccc',
+    onShow: function (colpkr) {
+      $(colpkr).fadeIn(500);
+      return false;
+    },
+    onHide: function (colpkr) {
+      $(colpkr).fadeOut(500);
+      return false;
+    },
+    onChange: function (hsb, hex, rgb) {
+      $('#colorSelector div').css('backgroundColor', '#' + hex);
+    }
+  });
+  
   //Filter 
-  $("#datepicker").datepicker({
+  $("#task_filter").datepicker({
     dateFormat: "dd/mm/yy",
     onSelect: function(dt, obj){
       var tasks = $.fn.get_tasks();
@@ -111,34 +157,11 @@ $(document).ready(function(){
     }
   });
   
-  // Browser support HTML5
-  if($.fn.is_html5_storage()){
-    // Notification
-  }else{
-    $('#html5_support').css('display','block');
-  }
-  
-  // Color Picker
-  $('#colorSelector').ColorPicker({
-    color: '#ccc',
-    onShow: function (colpkr) {
-      $(colpkr).fadeIn(500);
-      return false;
-    },
-    onHide: function (colpkr) {
-      $(colpkr).fadeOut(500);
-      return false;
-    },
-    onChange: function (hsb, hex, rgb) {
-      $('#colorSelector div').css('backgroundColor', '#' + hex);
-    }
-  });
-  
   
   (function($){
     
     $.fn.is_empty = function(){
-      var check = this.val() == '' ? false : true
+      var check = this.val().trim() == '' ? false : true
       return check;
     }
     
@@ -159,13 +182,23 @@ $(document).ready(function(){
     }
     
     // delete
-    $.fn.edit_task = function(uuid, new_title){
-      $('#' + 'list_' + uuid).html(new_title);
+    $.fn.edit_task = function(uuid, current_value, target){
+      var target = target.split('_')[0];
       var tasks = $.fn.get_tasks();
       var task = $.fn.parse_obj(tasks[uuid]);
-      task['title'] = new_title;
+      if(target == 'title'){
+        $('#' + 'list_' + uuid).html(current_value);
+      }else{
+        var arr = [];
+        var tags = current_value.split(',');
+        for(var i in tags){
+          arr.push("<span class='itag'>"+ tags[i].trim() +"</span>");
+        }
+      }
+      task[target] = current_value;
       tasks[uuid] = JSON.stringify(task);
       localStorage['tasks'] = JSON.stringify(tasks);
+      if(target == 'tags'){location.reload();}
     }
 
     $.fn.update_color = function(uuid, hex){
@@ -190,7 +223,7 @@ $(document).ready(function(){
         if(false){
           return false;
         }else{
-          $.fn.edit_task($.fn.get_parent_id(this), value);
+          $.fn.edit_task($.fn.get_parent_id(this), value, $(this).attr('id'));
           return(value);
         }
       });
@@ -198,7 +231,21 @@ $(document).ready(function(){
    
   })(jQuery);
   
-  //local storage implementation
+  // show notification
+  function show_notification(txt){
+    $('.notification').html(txt);
+    $('.notification').css('display','block');
+  }
+  
+  //Duplicate Check
+  function is_duplicate(task){
+    var tasks = $.fn.task_titles();
+    var check = tasks.indexOf(task);
+    check = check == -1 ? false : tasks[check];
+    return check;
+  };
+  
+  // Show tiles from local storage
   if(!localStorage['tasks']){
     localStorage['uuid'] = 0;
     localStorage['tasks'] = JSON.stringify({});
@@ -206,16 +253,9 @@ $(document).ready(function(){
     var task_objs = $.fn.get_tasks();
     for(var key in task_objs){
       var task = $.fn.parse_obj(task_objs[key]);
-      var task_uuid = task['id'];
-      var task_title = task['title'];
-      var task_created_at = task['created_at'];
-      var task_color = task['color'];
-      
-      $.fn.create_tile(task_uuid, task_title, task_color, task_created_at)
-      $.fn.create_tile_list(task_uuid.toString(), task_title);
-      
+      $.fn.create_tile(task)
+      $.fn.create_tile_list(task['id'].toString(), task['title']);
     }
-    
     // Events
     $.fn.bind_delete();
     $.fn.bind_inline_editor();
@@ -233,26 +273,10 @@ $(document).ready(function(){
     
   }
                 
-  // show notification
-  function show_notification(txt){
-    $('.notification').html(txt);
-    $('.notification').css('display','block');
-  }
-  
-  //Duplicate Check
-  function is_duplicate(task){
-    var tasks = $.fn.task_index();
-    var check = tasks.indexOf(task);
-    check = check == -1 ? false : tasks[check];
-    return check;
-  };
-  
   //if tiles is empty, get it hidden
   if($('#tiles_container').children().length == 0){
     $('#tiles_container').css('display', 'none');
     $('#tiles_list').css('display', 'none'); 
-  }else{
-    //create list right here
   }
   
   // Underscorised String
@@ -279,13 +303,14 @@ $(document).ready(function(){
         var uuid_i = parseInt(uuid_s) + 1;
         localStorage['uuid'] = uuid_i;
         uuid_s = uuid_i.toString();
-        var dt = $.fn.currentdate();
+        var dt = current_date();
         var tasks = $.fn.get_tasks();
         var h = {
             'id':  uuid_i, 
             'title': task, 
             'created_at': dt, 
-            'color': 'teal'
+            'color': 'teal',
+            'tags': 'Tag Me'
           }
         tasks[uuid_s] = JSON.stringify(h);
         localStorage['tasks'] = JSON.stringify(tasks);
@@ -296,7 +321,7 @@ $(document).ready(function(){
           //do nothing
         }
         
-        $.fn.create_tile(uuid_s, task, 'teal', dt);
+        $.fn.create_tile(h);
         $.fn.create_tile_list(uuid_s, task);
         
         // Events
