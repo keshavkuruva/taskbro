@@ -1,0 +1,62 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+  	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  	<title>TaskBro</title>
+  	<link href="metrojs.css" rel="stylesheet" type="text/css" />
+  	<link href="taskbro.css" rel="stylesheet" type="text/css" />
+  	<link href="http://code.jquery.com/ui/jquery-ui-git.css" rel="stylesheet" type="text/css" />
+  	
+  	<script src="http://code.jquery.com/jquery-latest.js"></script>
+  	<script src='http://code.jquery.com/ui/1.10.0/jquery-ui.min.js'></script>
+  	<!--Production-->
+  	<!--<script src="http://ajax.googleapis.com/ajax/libs/jquery/x.x.x/jquery.min.js"></script>-->
+  	
+  	<script src="taskbro_helper.js" type="text/javascript"></script>
+  	<script src="taskbro.js" type="text/javascript"></script>
+  	
+  	<script src="metrojs.js" type="text/javascript"></script>
+  	<script src="jeditable.js" type="text/javascript"></script>
+  	<!-- Color Picker Starts-->
+    <link rel="stylesheet" media="screen" type="text/css" href="colorpicker.css" />
+    <script type="text/javascript" src="colorpicker.js"></script>
+    <script src="bpopup.js" type="text/javascript"></script>
+    <script src="smart_autocomplete.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <section id="bd">
+      <section id="popup_content" style="display:none;">
+        <section style="border:1px solid #fff;border-radius: 5px;padding:50px;width: 400px;">
+          <input id='txt_tags' name='txt_tags' autocomplete="off" class='txt_box' style='padding:10px;width:100%;'/>
+        </section>
+      </section>
+            
+      <section id='app_title'>TaskBro :: Manage Task Online</section>
+      <hr>
+      <section class='notification' id='html5_support'>Oops! You browser does not support HTML5.</section>
+      <section id="form_container">
+        <!--<a href="#" style="position: relative;right: -384px;">
+          <span id='create' style=""></span>
+        </a>-->
+        <input id='txt_task' name="txt_task" class="txt_box" placeholder="Enter a task"></input>
+        <br>
+        <input id='btn_create' name='btn_create' type='button' value='Create' class='btn' />
+      </section>
+      <section style="margin-top:30px;">
+        <section style="float:left;">
+          <input type="text" id="task_filter" class="txt_box" placeholder="Filter"/>
+          <a href='#' id='show_all' onclick="$(this).show_all_task()">Show All</a>
+        </section>
+        <section class="clearfix"></section>
+      </section>
+      <hr style='margin:3px 0px;'>
+      <section id='notfound'>Hurray, No task pending for this date.</section>
+      <section id='container' class="clearfix">
+        <section id="tiles_list">
+        </section>
+        <section id='tiles_container'>
+        </section>
+      </section>
+    </section>
+  </body>
+</html>
