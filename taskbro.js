@@ -46,7 +46,9 @@ function clean_tags(tags){
     }else{
       var arr = [];
       for(var i in tags){
-        arr.push("<span class='itag'>"+ tags[i].trim() +"</span>");
+        if(tags[i] != ''){
+          arr.push("<span class='itag'>"+ tags[i].trim() +"</span>");
+        }
       }
       return arr.join(' ');
     }
@@ -58,6 +60,54 @@ function clean_tags(tags){
 $.fn.get_tasks = function(){
   // TODO: Implement return data.get('tasks');
   return $.fn.parse_obj(localStorage['tasks']);
+}
+
+$.fn.get_task = function(task_id){
+  var tasks = $.fn.get_tasks();
+  return $.fn.parse_obj(tasks[task_id]);
+}
+
+function get_all_tags(){
+  var tasks = data.get('tasks');
+  var arr = [];
+  for(var i in tasks){
+    var task = $.fn.parse_obj(tasks[i]);
+    if(task.tags && task.tags != 'Tag Me' && task.tags != ''){
+      var tile_tags = task.tags.split(',');
+      for(var ii in tile_tags){
+        var t = tile_tags[ii].trim();
+        if(t != ''){ arr.push(tile_tags[ii].trim()); }
+      }
+    }
+  }
+  return uniq(arr);
+}
+
+function get_tag_content(task_id){
+  var task = $.fn.get_task(task_id);
+  if(task.tags == 'Tag Me'){
+    return '';
+  }else{
+    return task.tags;
+  }
+}
+
+function uniq(arr){
+  var new_arr = [];
+  for(var i in arr){
+    if(arr[i].trim() != '' ){
+      new_arr.push(arr[i]);
+    }
+  }
+  return new_arr.filter(function(el,i,a){if(i==a.indexOf(el))return 1;return 0}).sort();
+}
+
+function update_tag(tag_id, new_value){
+  var tasks = $.fn.get_tasks();
+  var task = $.fn.parse_obj(tasks[tag_id]);
+  task['tags'] = uniq(new_value.split(',')).join(',');
+  tasks[tag_id] = JSON.stringify(task);
+  localStorage['tasks'] = JSON.stringify(tasks);
 }
 
 // Task Length
@@ -84,7 +134,7 @@ $.fn.create_tile = function(task){
   new_tile = new_tile + "<a href='#' class='close'>X</a>";
   new_tile = new_tile + "<div id='title_"+task_uuid+"' class='edit' style='position:relative;width:90%'>" + task.title + "</div>";
   new_tile = new_tile + "<div class='datetime'>" + task.created_at + "</div>";
-  new_tile = new_tile + "<div id='tags_"+ task_uuid +"' class='tag edit'>"+ clean_tags(task.tags) +"</div>";
+  new_tile = new_tile + "<div id='tags_"+ task_uuid +"' class='tag'>"+ clean_tags(task.tags) +"</div>";
   new_tile = new_tile + "</div>";
   $('#tiles_container').append(new_tile).css( 'display', 'block');
 }
@@ -228,6 +278,26 @@ $(document).ready(function(){
         }
       });
     }
+    
+    $.fn.bind_tag_popup = function(){
+      $('.tag').bind('click', function(e) {
+        var current_tag_id = $(this).attr('id').split('_')[1];
+        e.preventDefault();
+        $('#popup_content').bPopup({
+          position: ['30%', '30%'],
+          follow: [false, false],
+          modalColor: '#999',
+          zIndex: 990,
+          onOpen: function(){
+            $('#txt_tags').val(get_tag_content(current_tag_id));
+          },
+          onClose: function(){
+            update_tag(current_tag_id, $('#txt_tags').val());
+            location.reload();
+          }
+        });
+      });
+    }
    
   })(jQuery);
   
@@ -259,6 +329,7 @@ $(document).ready(function(){
     // Events
     $.fn.bind_delete();
     $.fn.bind_inline_editor();
+    $.fn.bind_tag_popup();
     
    // Color Picker
     $('.tilebox').click(function(){
@@ -272,6 +343,41 @@ $(document).ready(function(){
     })
     
   }
+  
+  //Autocompleter
+  $('input#txt_tags').smartAutoComplete({
+    source: get_all_tags(),
+    maxResults: 9
+    
+  });
+  
+  $("input#txt_tags").bind({
+     keyIn: function(ev){
+       var tag_list = ev.smartAutocompleteData.query.split(","); 
+       //pass the modified query to default event
+       ev.smartAutocompleteData.query = $.trim(tag_list[tag_list.length - 1]);
+     },
+
+     itemSelect: function(ev, selected_item){
+      var options = $(this).smartAutoComplete();
+
+      //get the text from selected item
+      var selected_value = $(selected_item).text();
+      var cur_list = $(this).val().split(","); 
+      cur_list[cur_list.length - 1] = selected_value;
+      $(this).val(cur_list.join(",") + ","); 
+
+      //set item selected property
+      options.setItemSelected(true);
+
+      //hide results container
+      $(this).trigger('lostFocus');
+        
+      //prevent default event handler from executing
+      ev.preventDefault();
+    },
+  });
+
                 
   //if tiles is empty, get it hidden
   if($('#tiles_container').children().length == 0){
@@ -327,6 +433,7 @@ $(document).ready(function(){
         // Events
         $.fn.bind_delete();
         $.fn.bind_inline_editor();
+        $.fn.bind_tag_popup();
         
         // Color Picker
         $('.tilebox').ColorPicker({
