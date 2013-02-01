@@ -85,9 +85,15 @@ function get_all_tags(){
 
 function get_tag_content(task_id){
   var task = $.fn.get_task(task_id);
-  if(task.tags == 'Tag Me'){
+  if(task.tags == 'Tag Me' || task.tags == 'Tag Me'){
     return '';
   }else{
+    var tags = task.tags.split(',');
+    var arr = [];
+    for(var i in tags){
+      //var format_tag = "<div>";
+      //format_tag += ""
+    }
     return task.tags;
   }
 }
@@ -148,10 +154,13 @@ $.fn.show_all_task = function (){
   location.reload();
   $('#task_filter').val('Filter');
 }
+
 // DOM Loaded
 $(document).ready(function(){
   
-  // Browser support HTML5
+  $temp = [];
+  
+  // Browser supports HTML5?
   if(is_html5_storage()){
     // Notification
   }else{
@@ -279,7 +288,7 @@ $(document).ready(function(){
       });
     }
     
-    $.fn.bind_tag_popup = function(){
+    $.fn.bind_tag_popup_old = function(){
       $('.tag').bind('click', function(e) {
         var current_tag_id = $(this).attr('id').split('_')[1];
         e.preventDefault();
@@ -293,6 +302,29 @@ $(document).ready(function(){
           },
           onClose: function(){
             update_tag(current_tag_id, $('#txt_tags').val());
+            location.reload();
+          }
+        });
+      });
+    }
+    
+    $.fn.bind_tag_popup = function(){
+      $('.tag').bind('click', function(e) {
+        var current_tag_id = $(this).attr('id').split('_')[1];
+        e.preventDefault();
+        $('#popup_content').bPopup({
+          position: ['30%', '30%'],
+          follow: [false, false],
+          modalColor: '#999',
+          zIndex: 990,
+          onOpen: function(){
+            //$('#txt_tags').val(get_tag_content(current_tag_id));
+            //$temp = get_tag_content(current_tag_id).split(',');
+            $temp = [];
+          },
+          onClose: function(){
+            //update_tag(current_tag_id, $('#txt_tags').val());
+            update_tag(current_tag_id, $temp.join());
             location.reload();
           }
         });
@@ -345,13 +377,13 @@ $(document).ready(function(){
   }
   
   //Autocompleter
-  $('input#txt_tags').smartAutoComplete({
+  $('input#txt_tags_old').smartAutoComplete({
     source: get_all_tags(),
     maxResults: 9
     
   });
   
-  $("input#txt_tags").bind({
+  $("input#txt_tags_old").bind({
      keyIn: function(ev){
        var tag_list = ev.smartAutocompleteData.query.split(","); 
        //pass the modified query to default event
@@ -377,8 +409,38 @@ $(document).ready(function(){
       ev.preventDefault();
     },
   });
+  
+  $('input#txt_tags')
+    .textext({
+      plugins : 'tags autocomplete',
+      tagsItems: [],
+      html : {
+        wrap: '<div class="text-core"><div class="text-wrap" style="border-radius:5px;"></div>',
+        hidden: '<input id="txt_tags_id" type="hidden" name="txt_tags" value="[moin]">'
+      },
+      ext: {
+        tags: {
+          addTags: function(tags)
+          {
+            $temp.push(tags);
+            $('.text-tags').css('margin','6px 3px');
+            $.fn.textext.TextExtTags.prototype.addTags.apply(this, arguments);
+          }
+        }
+      }
+    })
+    .bind('getSuggestions', function(e, data){
+      var list = get_all_tags(),
+          textext = $(e.target).textext()[0],
+          query = (data ? data.query : '') || ''
+          ;
 
-                
+      $(this).trigger(
+          'setSuggestions', { result : textext.itemManager().filter(list, query) }
+      );
+    })
+  ;
+
   //if tiles is empty, get it hidden
   if($('#tiles_container').children().length == 0){
     $('#tiles_container').css('display', 'none');

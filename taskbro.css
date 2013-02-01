@@ -10,7 +10,7 @@ body{
   background-color:#E3E2DD;
   opacity:0.9;
   margin:30px;
-  padding:40px 80px;
+  padding:20px 80px;
   border-radius:9px;
   border-left:5px solid;
   border-right:5px solid;
@@ -209,3 +209,4 @@ ul.smart_autocomplete_container li{
   border-radius:3px;
 }
 li.smart_autocomplete_highlight {background-color: #999;}
+.text-button{margin:6px 2px 2px 0}
